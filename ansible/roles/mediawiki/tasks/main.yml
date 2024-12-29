@@ -1,0 +1,16 @@
+---
+# tasks file for mediawiki
+- name: Установка MediaWiki
+  apt:
+    name:
+      - mediawiki
+      - php-fpm
+      - php-pgsql
+    state: present
+    update_cache: yes
+
+- name: Установка nginx
+  apt:
+    name: "nginx"
+    state: present
+    update_cache: yes

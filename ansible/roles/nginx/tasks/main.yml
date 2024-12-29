@@ -1,0 +1,7 @@
+---
+# tasks file for nginx
+- name: Установка NGINX
+  apt:
+    name: "nginx"
+    state: present
+    update_cache: yes

@@ -1,0 +1,30 @@
+---
+- name: Настройка инфраструктуры
+  hosts: all
+  roles:
+    - default  # Устанавливаем базовые пакеты на все ВМ
+
+- name: Настройка MinIO
+  hosts: minio
+  roles:
+    - minio  # Установка MinIO
+
+- name: Настройка NGINX
+  hosts: nginx
+  roles:
+    - nginx  # Установка и настройка NGINX
+
+- name: Настройка PostgreSQL
+  hosts: postgresql
+  roles:
+    - postgres  # Установка и настройка PostgreSQL
+
+- name: Настройка Zabbix
+  hosts: zabbix
+  roles:
+    - zabbix  # Установка и настройка Zabbix-сервера
+
+- name: Настройка MediaWiki
+  hosts: mediawiki
+  roles:
+    - mediawiki  # Установка и настройка MediaWiki

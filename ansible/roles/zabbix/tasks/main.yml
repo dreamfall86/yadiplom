@@ -1,0 +1,9 @@
+---
+# tasks file for zabbix
+- name: Установка Zabbix
+  apt:
+    name:
+      - zabbix-server
+      - zabbix-agent
+    state: present
+    update_cache: yes

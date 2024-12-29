@@ -1,0 +1,24 @@
+---
+# tasks file for default
+- name: Обновление списка пакетов
+  apt:
+    update_cache: yes
+
+- name: Установка пакетов
+  apt:
+    name:
+      - dnsutils
+      - net-tools
+      - zabbix-agent
+      - rsync
+      - rsyslog
+      - mc
+      - curl
+      - wget
+      - apt-transport-https
+      - gnupg2
+      - software-properties-common
+      - ca-certificates
+    state: present
+    update_cache: yes
+     
