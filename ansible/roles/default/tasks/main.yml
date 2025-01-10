@@ -7,7 +7,6 @@
 - name: Установка пакетов
   apt:
     name:
-      - dnsutils
       - net-tools
       - zabbix-agent
       - rsync
@@ -16,9 +15,21 @@
       - curl
       - wget
       - apt-transport-https
-      - gnupg2
-      - software-properties-common
       - ca-certificates
+      - python3-pip
     state: present
     update_cache: yes
-     
+
+- name: Установка библиотеки psycopg2-binary
+  pip:
+    name: "{{ psycopg2_package }}"
+    state: present
+
+- name: Настройка конфигурации Zabbix Agent
+  template:
+    src: "zabbix_agentd.conf.j2"
+    dest: "/etc/zabbix/zabbix_agentd.conf"
+  vars:
+    zabbix_server_ip: "{{ hostvars['zabbix'].ansible_host | default('') }}"
+  notify:
+    - Restart zabbix-agent  # Уведомление для перезапуска службы

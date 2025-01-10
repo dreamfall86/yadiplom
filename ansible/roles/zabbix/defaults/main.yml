@@ -1,2 +1,3 @@
 ---
 # defaults file for zabbix
+zabbix_server_ip: "{{ hostvars['zabbix']['ansible_default_ipv4']['address'] }}"

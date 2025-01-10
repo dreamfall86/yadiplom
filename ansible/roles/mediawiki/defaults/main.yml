@@ -1,2 +1,3 @@
 ---
 # defaults file for mediawiki
+server_url: "{{ ansible_host }}"

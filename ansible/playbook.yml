@@ -1,30 +1,72 @@
 ---
-- name: Настройка инфраструктуры
+# Настройка всех сервисов
+- name: Настройка всех сервисов
   hosts: all
-  roles:
-    - default  # Устанавливаем базовые пакеты на все ВМ
 
-- name: Настройка MinIO
-  hosts: minio
-  roles:
-    - minio  # Установка MinIO
-
-- name: Настройка NGINX
-  hosts: nginx
-  roles:
-    - nginx  # Установка и настройка NGINX
+  tasks:
+    - name: Применение роли для установки общих пакетов
+      include_role:
+        name: default
 
 - name: Настройка PostgreSQL
   hosts: postgresql
-  roles:
-    - postgres  # Установка и настройка PostgreSQL
 
-- name: Настройка Zabbix
-  hosts: zabbix
-  roles:
-    - zabbix  # Установка и настройка Zabbix-сервера
+  vars:
+    patroni_node_name: "{{ inventory_hostname }}"
+    patroni_postgresql_listen: "0.0.0.0:5432"
+    patroni_etcd_host: "{{ hostvars['psql1']['ansible_host'] }}"
+
+  tasks:
+    - name: Применение роли для PostgreSQL
+      include_role:
+        name: postgres
+
+- name: Настройка MinIO
+  hosts: minio
+
+  vars:
+    minio_access_key: "keyaccess"
+    minio_secret_key: "keysecret"
+
+  tasks:
+    - name: Применение роли для MinIO
+      include_role:
+        name: minio
+
+- name: Настройка Nginx
+  hosts: nginx
+
+  vars:
+    mediawiki1_ip: "{{ hostvars['mw1'].ansible_host }}"
+    mediawiki2_ip: "{{ hostvars['mw2'].ansible_host }}"
+
+  tasks:
+    - name: Применение роли для Nginx
+      include_role:
+        name: nginx
 
 - name: Настройка MediaWiki
   hosts: mediawiki
-  roles:
-    - mediawiki  # Установка и настройка MediaWiki
+
+  vars:
+    postgres_host: "{{ hostvars['psql1'].ansible_host }}"
+    postgres_user: "wikiuser"
+    postgres_password: "balamut666"  # Определите пароль для MediaWiki пользователя базы данных
+
+  tasks:
+    - name: Применение роли для MediaWiki
+      include_role:
+        name: mediawiki
+
+- name: Настройка Zabbix
+  hosts: zabbix
+
+  vars:
+    postgres_host: "{{ hostvars['psql1'].ansible_host }}"
+    postgres_user: "zabbix"
+    postgres_password: "i7def"
+
+  tasks:
+    - name: Применение роли для zabbix
+      include_role:
+        name: zabbix

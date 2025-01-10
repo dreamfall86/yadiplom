@@ -1,0 +1,32 @@
+scope: postgres
+namespace: /service/
+name: {{ patroni_node_name }}
+
+restapi:
+  listen: {{ patroni_restapi_listen }}
+  connect_address: {{ patroni_postgresql_connect_address }}
+
+etcd:
+  host: {{ patroni_etcd_host }}
+
+bootstrap:
+  initdb:
+    encoding: UTF8
+    locale: en_US.UTF-8
+    data_checksums: false
+  pg_hba:
+    - host replication all {{ patroni_private_ip }}/32 trust
+    - hostssl all all 0.0.0.0/0 md5
+
+postgresql:
+  listen: {{ patroni_postgresql_listen }}
+  connect_address: {{ patroni_postgresql_connect_address }}
+  data_dir: {{ patroni_data_dir }}
+  bin_dir: {{ patroni_bin_dir }}
+  archive_mode: "on"
+  archive_command: "cp %p /var/lib/postgresql/archive/%f"
+  max_wal_senders: 5
+  wal_level: replica
+  hot_standby: on
+  max_connections: 100
+  shared_buffers: 2GB

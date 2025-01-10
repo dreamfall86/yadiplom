@@ -1,0 +1,23 @@
+<?php
+# Настройки для базы данных
+$wgDBtype = "postgres";
+$wgDBserver = "{{ postgres_host }}";  # Адрес сервера PostgreSQL
+$wgDBname = "my_wiki";  # Имя базы данных
+$wgDBuser = "wikiuser";  # Имя пользователя базы данных
+$wgDBpassword = "balamut666";  # Пароль пользователя базы данных
+
+# Параметры для кэширования
+$wgMemcachedServers = [ "127.0.0.1:11211" ];
+
+# Включаем поддержку файлового хранилища (MinIO)
+$wgFileCacheDirectory = "/data/minio";  # Путь для файлового хранилища
+
+# Прочие настройки
+$wgServer = "http://{{ server_url }}";
+$wgSitename = "My MediaWiki";
+$wgScriptPath = "";
+$wgArticlePath = "/wiki/$1";
+wfLoadSkin( 'MinervaNeue' );
+wfLoadSkin( 'MonoBook' );
+wfLoadSkin( 'Timeless' );
+wfLoadSkin( 'Vector' );

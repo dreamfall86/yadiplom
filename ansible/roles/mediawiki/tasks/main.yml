@@ -1,16 +1,162 @@
 ---
 # tasks file for mediawiki
-- name: Установка MediaWiki
+- name: Завершение всех процессов, использующих блокировку dpkg
+  shell: |
+    # Проверяем, если процессы заблокированы, завершаем их
+    pids=$(ps aux | grep -E '([u]nattended-upgrades|[a]pt)' | awk '{print $2}')
+    for pid in $pids; do
+      kill -9 $pid
+      echo "Завершен процесс с PID $pid"
+    done
+    # Делаем попытку очистить lock-файлы
+    rm -f /var/lib/dpkg/lock-frontend
+    rm -f /var/cache/apt/archives/lock
+    rm -f /var/lib/apt/lists/lock
+    dpkg --configure -a
+    apt-get clean
+  changed_when: false
+  ignore_errors: yes
+  retries: 5
+  delay: 10
+
+- name: Перезапуск службы apt
+  shell: |
+    systemctl restart apt-daily-upgrade.timer
+    systemctl restart apt-daily.timer
+    systemctl restart apt.service
+  changed_when: false
+  ignore_errors: yes
+
+- name: Отключение автоматических обновлений
+  shell: |
+    systemctl stop unattended-upgrades
+    systemctl disable unattended-upgrades
+  ignore_errors: yes
+
+- name: Задержка перед установкой пакетов
+  pause:
+    seconds: 10
+
+- name: Run dpkg --configure -a to fix interrupted installations
+  command: dpkg --configure -a
+  become: yes
+  ignore_errors: yes
+
+- name: Установка пакетов для сервиса
   apt:
     name:
-      - mediawiki
-      - php-fpm
+      - nginx
+      - php
+      - php-intl
+      - php8.1
+      - php8.1-fpm
+      - php-mbstring
+      - php-xml
       - php-pgsql
+      - php-apcu 
+      - php-curl
+      - python3-pip
+      - python3-dev
+      - libpq-dev
+      - postgresql
     state: present
     update_cache: yes
+    install_recommends: no
 
-- name: Установка nginx
-  apt:
-    name: "nginx"
+- name: Установка библиотеки psycopg2-binary
+  pip:
+    name: psycopg2-binary
     state: present
-    update_cache: yes
+
+- name: Установка MediaWiki
+  shell: "wget https://releases.wikimedia.org/mediawiki/1.42/mediawiki-1.42.1.tar.gz && tar -xzf mediawiki-1.42.1.tar.gz && mv mediawiki-1.42.1 /var/www/mediawiki"
+  args:
+    executable: /bin/bash
+
+- name: Настройка конфигурации для MediaWiki
+  template:
+    src: "nginx.conf.j2"
+    dest: "/etc/nginx/sites-available/mediawiki"
+  notify:
+    - Reload nginx
+
+- name: Создание символической ссылки для MediaWiki
+  file:
+    src: "/etc/nginx/sites-available/mediawiki"
+    dest: "/etc/nginx/sites-enabled/mediawiki"
+    state: link
+
+- name: Настройка PHP-FPM для MediaWiki
+  template:
+    src: "php-fpm.conf.j2"
+    dest: "/etc/php/8.1/fpm/pool.d/mediawiki.conf"
+  notify:
+    - Restart php-fpm
+
+- name: Убедитесь, что PostgreSQL запущен
+  service:
+    name: postgresql
+    state: started
+
+- name: Настройка переменных для MediaWiki
+  set_fact:
+    db_name: "my_wiki"
+    db_user: "wikiuser"
+    db_pass: "balamut666"
+    db_host: "{{ hostvars['psql1']['ansible_host'] }}"
+    db_server: "{{ hostvars['psql1']['ansible_host'] }}"
+    lang_code: "ru" 
+    script_path: ""   
+    wiki_name: "MyWiki"
+    admin_password: "1234"
+
+- name: Настройка базы данных для MediaWiki
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  postgresql_db:
+    name: "{{ db_name }}"
+    state: present
+    login_user: "{{ postgres_user }}"
+    login_password: "{{ postgres_password }}"
+    encoding: UTF-8
+    owner: wikiuser
+    host: "{{ db_host }}"  
+    port: 5432
+
+- name: Создание директории для MediaWiki
+  file:
+    path: /var/www/mediawiki
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: копирование LocalSettings.php
+  template:
+    src: LocalSettings.php.j2
+    dest: /var/www/mediawiki/LocalSettings.php
+  become: yes
+
+- name: Проверка прав доступа на файл LocalSettings.php
+  file:
+    path: "/var/www/mediawiki/LocalSettings.php"
+    owner: "www-data"
+    group: "www-data"
+    mode: "0644"
+
+- name: Проверка существования таблиц в базе данных
+  shell: |
+    PGPASSWORD="balamut666" psql -h {{ hostvars['psql1']['ansible_host'] }} -U wikiuser -d my_wiki -tAc "SELECT 1 FROM pg_tables WHERE schemaname = 'public' LIMIT 1"
+  register: db_check
+  changed_when: false
+  failed_when: db_check.rc != 0
+
+- name: Импорт структуры базы данных из postgres/tables.sql (только если БД пустая)
+  shell: |
+    PGPASSWORD="balamut666" psql -h {{ hostvars['psql1']['ansible_host'] }} -U wikiuser -d my_wiki -f /var/www/mediawiki/maintenance/postgres/tables-generated.sql
+  args:
+    creates: /var/www/mediawiki/db-initialized.flag
+  when: db_check.stdout.strip() == ""
+  notify: 
+    - Reload nginx
+    - Restart php-fpm

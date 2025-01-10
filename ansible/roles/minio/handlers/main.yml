@@ -1,2 +1,10 @@
 ---
 # handlers file for minio
+- name: Restart minio
+  service:
+    name: minio.service
+    state: restarted
+
+- name: Перезагрузить systemd
+  systemd:
+    daemon_reload: yes

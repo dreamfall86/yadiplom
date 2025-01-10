@@ -1,2 +1,12 @@
 ---
 # handlers file for mediawiki
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: Restart php-fpm
+  service:
+    name: php8.1-fpm
+    state: restarted
+    enabled: yes

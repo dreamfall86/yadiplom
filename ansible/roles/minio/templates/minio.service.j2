@@ -1,0 +1,14 @@
+[Unit]
+Description=MinIO
+Documentation=https://docs.min.io
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/minio server /data
+Restart=always
+User=minio
+Group=minio
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

@@ -7,12 +7,6 @@
       - wget
     state: present
     update_cache: yes
-
-- name: Установка MinIO
-  apt:
-    name: "minio"
-    state: present
-    update_cache: yes
   
 - name: Скачать MinIO бинарный файл
   get_url:
@@ -28,8 +22,28 @@
 
 - name: Создать директорию для данных MinIO
   file:
-    path: /data/minio
+    path: /etc/minio
     state: directory
     owner: minio
     group: minio
     mode: '0755'
+
+- name: Настройка конфигурации MinIO
+  template:
+    src: "minio.conf.j2"
+    dest: "/etc/minio/minio.conf"
+  notify:
+    - Restart minio
+
+- name: Создание unit-файла для MinIO
+  template:
+    src: "minio.service.j2"
+    dest: "/etc/systemd/system/minio.service"
+  notify:
+    - Перезагрузить systemd
+
+- name: Запуск MinIO
+  service:
+    name: minio
+    state: started
+    enabled: yes
