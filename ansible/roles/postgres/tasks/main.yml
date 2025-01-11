@@ -1,48 +1,5 @@
 ---
 # tasks file for postgres
-- name: Завершение всех процессов, использующих блокировку dpkg
-  shell: |
-    # Проверяем, если процессы заблокированы, завершаем их
-    pids=$(ps aux | grep -E '([u]nattended-upgrades|[a]pt)' | awk '{print $2}')
-    for pid in $pids; do
-      kill -9 $pid
-      echo "Завершен процесс с PID $pid"
-    done
-    # Делаем попытку очистить lock-файлы
-    rm -f /var/lib/dpkg/lock-frontend
-    rm -f /var/cache/apt/archives/lock
-    rm -f /var/lib/apt/lists/lock
-    dpkg --configure -a
-    apt-get clean
-  changed_when: false
-  ignore_errors: yes
-  retries: 5
-  delay: 10
-
-- name: Перезапуск службы apt
-  shell: |
-    systemctl restart apt-daily-upgrade.timer
-    systemctl restart apt-daily.timer
-    systemctl restart apt.service
-  changed_when: false
-  ignore_errors: yes
-
-- name: Отключение автоматических обновлений
-  shell: |
-    systemctl stop unattended-upgrades
-    systemctl disable unattended-upgrades
-  ignore_errors: yes
-
-- name: Задержка перед установкой пакетов
-  pause:
-    seconds: 10
-
-- name: Run dpkg --configure -a to fix interrupted installations
-  command: dpkg --configure -a
-  become: yes
-  ignore_errors: yes
-
-
 - name: Установка PostgreSQL
   apt:
     name: postgresql
@@ -71,20 +28,26 @@
   template:
     src: postgresql.conf.j2
     dest: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
-  notify:
-    - Restart PostgreSQL
 
 - name: Настройка PostgreSQL для использования trust в pg_hba.conf
   template:
     src: "pg_hba.conf.j2"   
     dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf" 
-  notify:
-    - Restart PostgreSQL
 
 - name: Перезагрузка PostgreSQL для применения изменений в pg_hba.conf
   systemd:
     name: postgresql
     state: restarted
+
+- name: Создание пользователя PostgreSQL replicator
+  postgresql_user:
+    name: replicator
+    password: "1234"
+    state: present
+    login_user: postgres
+    login_password: "{{ postgres_password }}"
+    host: "{{ postgres_host }}"
+    port: 5432
 
 - name: Создание пользователя PostgreSQL wiki
   postgresql_user:
@@ -167,10 +130,102 @@
   template:
     src: "pg_hba2.conf.j2"   
     dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf" 
-  notify:
-    - Restart PostgreSQL
 
 - name: Перезагрузка PostgreSQL для применения изменений в pg_hba.conf
   systemd:
     name: postgresql
     state: restarted
+
+- name: stop postgressql
+  systemd:
+    name: postgresql
+    state: stopped
+
+- name: Установка Etcd
+  apt:
+    name: etcd
+    state: present
+
+- name: stop etcd
+  systemd:
+    name: etcd
+    state: stopped
+
+- name: удаление каталога данных и перемещение
+  shell: rm -rfv /var/lib/etcd/*
+  become: true
+ 
+- name: Создание конфигурационного файла для Etcd
+  template:
+    src: etcd.conf.j2
+    dest: "/etc/default/etcd"
+
+- name: Установка зависимостей для Patroni
+  apt:
+    name:
+      - python3-pip
+      - python3-dev
+      - libpq-dev
+    state: present
+    update_cache: yes
+
+- name: Установка Patroni через pip
+  pip:
+    name: patroni
+    state: present
+    executable: pip3
+
+- name: проверка/доустановка через pip
+  shell: |
+    pip3 install psycopg2-binary && pip3 install wheel && pip3 install python-etcd
+  ignore_errors: yes
+
+- name: Создание пользовательского каталога Patroni
+  file:
+    path: "{{ patroni_conf_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0755"
+
+- name: Создание конфигурационного файла Patroni
+  template:
+    src: patroni.yml.j2
+    dest: "{{ patroni_conf_dir }}/config.yml"
+  notify:
+    - Restart Patroni
+
+- name: Создание systemd юнит-файла для Patroni
+  copy:
+    dest: /etc/systemd/system/patroni.service
+    content: |
+      [Unit]
+      Description=Patroni
+      After=network.target
+
+      [Service]
+      User=postgres
+      Group=postgres
+      ExecStart=/usr/local/bin/patroni {{ patroni_conf_dir }}/config.yml
+      ExecStop=/bin/kill -INT $MAINPID
+      Restart=always
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Перезагрузка systemd для применения изменений
+  systemd:
+    daemon_reload: yes
+
+- name: Запуск службы Etcd
+  systemd:
+    name: etcd
+    state: started
+    enabled: yes
+
+- name: Запуск службы Patroni
+  systemd:
+    name: patroni
+    state: started
+    enabled: yes

@@ -1,9 +1,5 @@
 ---
 # tasks file for default
-- name: Обновление списка пакетов
-  apt:
-    update_cache: yes
-
 - name: Установка пакетов
   apt:
     name:
@@ -11,11 +7,8 @@
       - zabbix-agent
       - rsync
       - rsyslog
-      - mc
       - curl
       - wget
-      - apt-transport-https
-      - ca-certificates
       - python3-pip
     state: present
     update_cache: yes
