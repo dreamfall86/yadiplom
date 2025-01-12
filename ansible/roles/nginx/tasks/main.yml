@@ -1,17 +1,11 @@
 ---
 # tasks file for nginx
-- name: Остановка и отключение Apache2
-  systemd:
-    name: apache2
-    state: stopped
-    enabled: no
-  ignore_errors: yes
-
 - name: Установка пакетов
   apt:
     name:
       - php8.1-fpm
       - php8.1-cli
+      - python3-pip
       - php8.1-mysql
       - php8.1-curl
       - php8.1-xml
@@ -19,6 +13,11 @@
       - php8.1-opcache
     state: present
     update_cache: yes 
+
+- name: Установка библиотеки psycopg2-binary
+  pip:
+    name: psycopg2-binary
+    state: present
 
 - name: Попытка установки NGINX с повторами
   block:

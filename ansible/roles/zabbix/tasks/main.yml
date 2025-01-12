@@ -18,12 +18,18 @@
       - zabbix-server-pgsql
       - zabbix-frontend-php
       - zabbix-nginx-conf
+      - python3-pip
       - zabbix-sql-scripts
       - php8.1-pgsql
       - postgresql
       - postgresql-client
     state: present
     update_cache: yes
+
+- name: Установка библиотеки psycopg2-binary
+  pip:
+    name: psycopg2-binary
+    state: present
 
 - name: Настройка конфигурации Zabbix Server
   template:

@@ -4,19 +4,14 @@
   apt:
     name:
       - net-tools
-      - zabbix-agent
       - rsync
       - rsyslog
       - curl
       - wget
       - python3-pip
+      - zabbix-agent
     state: present
     update_cache: yes
-
-- name: Установка библиотеки psycopg2-binary
-  pip:
-    name: "{{ psycopg2_package }}"
-    state: present
 
 - name: Настройка конфигурации Zabbix Agent
   template:

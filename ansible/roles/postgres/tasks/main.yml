@@ -5,6 +5,18 @@
   become: yes
   ignore_errors: yes
 
+- name: Установка пакетов
+  apt:
+    name:
+      - python3-pip
+    state: present
+    update_cache: yes
+
+- name: Установка библиотеки psycopg2-binary
+  pip:
+    name: psycopg2-binary
+    state: present
+
 - name: Установка PostgreSQL
   apt:
     name: postgresql
