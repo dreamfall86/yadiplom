@@ -1,0 +1,12 @@
+- name: Настройка MediaWiki
+  hosts: mediawiki
+
+  vars:
+    postgres_host: "{{ hostvars['psql1'].ansible_host }}"
+    postgres_user: "wikiuser"
+    postgres_password: "balamut666"  # Определите пароль для MediaWiki пользователя базы данных
+
+  tasks:
+    - name: Применение роли для MediaWiki
+      include_role:
+        name: mediawiki

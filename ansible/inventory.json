@@ -4,13 +4,13 @@
             "mediawiki": {
                 "hosts": {
                     "mw1": {
-                        "ansible_host": "89.169.141.133",
+                        "ansible_host": "51.250.10.224",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"
                     },
                     "mw2": {
-                        "ansible_host": "84.252.130.40",
+                        "ansible_host": "51.250.83.162",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"
@@ -20,13 +20,13 @@
             "postgresql": {
                 "hosts": {
                     "psql1": {
-                        "ansible_host": "62.84.113.174",
+                        "ansible_host": "51.250.10.166",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"
                     },
                     "psql2": {
-                        "ansible_host": "89.169.129.126",
+                        "ansible_host": "62.84.124.28",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"
@@ -36,7 +36,7 @@
             "minio": {
                 "hosts": {
                     "minio": {
-                        "ansible_host": "51.250.8.173",
+                        "ansible_host": "51.250.7.170",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"
@@ -46,7 +46,7 @@
             "nginx": {
                 "hosts": {
                     "nginx": {
-                        "ansible_host": "89.169.155.200",
+                        "ansible_host": "51.250.0.79",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"
@@ -56,7 +56,7 @@
             "zabbix": {
                 "hosts": {
                     "zabbix": {
-                        "ansible_host": "89.169.154.55",
+                        "ansible_host": "51.250.3.209",
                         "ansible_user": "root",
                         "ansible_ssh_private_key_file": "/home/dream/.ssh/id_ed25519",
                         "ansible_ssh_common_args": "-o StrictHostKeyChecking=no"

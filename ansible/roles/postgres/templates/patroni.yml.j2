@@ -103,8 +103,8 @@ bootstrap:
     - host replication replicator {{ etcd_host2 }}/32 md5
   
 postgresql:
-  listen: 0.0.0.0:5432
-  connect_address: 0.0.0.0:5432
+  listen: "*"
+  connect_address: "{{ hostvars[inventory_hostname]['ansible_host'] }}:5432"
   use_unix_socket: true
   data_dir: "{{ patroni_data_dir }}"
   config_dir: /etc/postgresql/14/main

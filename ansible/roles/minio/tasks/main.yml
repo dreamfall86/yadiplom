@@ -1,5 +1,11 @@
 ---
 # tasks file for minio
+- name: Отключение unattended-upgrades
+  systemd:
+    name: unattended-upgrades
+    state: stopped
+    enabled: no
+
 - name: Убедиться, что необходимые пакеты для добавления репозитория установлены
   apt:
     name:

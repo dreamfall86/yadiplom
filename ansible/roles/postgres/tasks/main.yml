@@ -1,5 +1,10 @@
 ---
 # tasks file for postgres
+- name: Run dpkg --configure -a to fix interrupted installations
+  command: dpkg --configure -a
+  become: yes
+  ignore_errors: yes
+
 - name: Установка PostgreSQL
   apt:
     name: postgresql
@@ -44,6 +49,14 @@
     name: replicator
     password: "1234"
     state: present
+    login_user: postgres
+    login_password: "{{ postgres_password }}"
+    host: "{{ postgres_host }}"
+    port: 5432
+
+- name: Установка репликационных прав для пользователя replicator
+  postgresql_query:
+    query: "ALTER ROLE replicator WITH REPLICATION PASSWORD '1234';"
     login_user: postgres
     login_password: "{{ postgres_password }}"
     host: "{{ postgres_host }}"
@@ -160,6 +173,12 @@
     src: etcd.conf.j2
     dest: "/etc/default/etcd"
 
+- name: Запуск службы Etcd
+  systemd:
+    name: etcd
+    state: started
+    enabled: yes
+
 - name: Установка зависимостей для Patroni
   apt:
     name:
@@ -192,8 +211,6 @@
   template:
     src: patroni.yml.j2
     dest: "{{ patroni_conf_dir }}/config.yml"
-  notify:
-    - Restart Patroni
 
 - name: Создание systemd юнит-файла для Patroni
   copy:
@@ -218,14 +235,29 @@
   systemd:
     daemon_reload: yes
 
-- name: Запуск службы Etcd
-  systemd:
-    name: etcd
-    state: started
-    enabled: yes
-
 - name: Запуск службы Patroni
   systemd:
     name: patroni
     state: started
     enabled: yes
+
+- name: Очистка данных PostgreSQL (только на psql2)
+  shell: |
+    systemctl stop patroni
+    rm -rf /var/lib/postgresql/{{ postgresql_version }}/main/*
+  become: true
+  when: inventory_hostname == "psql2"
+
+- name: Очистка данных PostgreSQL (только на psql2)
+  shell: |
+    systemctl stop patroni
+    rm -rf /var/lib/postgresql/{{ postgresql_version }}/main/*
+  become: true
+  when: inventory_hostname == "psql2"
+
+- name: Перезапуск Patroni (только на psql2)
+  systemd:
+    name: patroni
+    state: restarted
+    enabled: yes
+  when: inventory_hostname == "psql2"

@@ -1,0 +1,12 @@
+- name: Настройка PostgreSQL
+  hosts: postgresql
+
+  vars:
+    patroni_node_name: "{{ inventory_hostname }}"
+    patroni_postgresql_listen: "0.0.0.0:5432"
+    patroni_etcd_host: "{{ hostvars['psql1']['ansible_host'] }}"
+
+  tasks:
+    - name: Применение роли для PostgreSQL
+      include_role:
+        name: postgres

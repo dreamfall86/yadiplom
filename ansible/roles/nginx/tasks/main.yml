@@ -1,10 +1,32 @@
 ---
 # tasks file for nginx
-- name: Установка NGINX
-  apt:
-    name: "nginx"
-    state: present
-    update_cache: yes
+- name: Отключение unattended-upgrades
+  systemd:
+    name: unattended-upgrades
+    state: stopped
+    enabled: no
+
+- name: Остановка и отключение Apache2
+  systemd:
+    name: apache2
+    state: stopped
+    enabled: no
+
+- name: Попытка установки NGINX с повторами
+  block:
+    - name: Выполнить установку NGINX
+      apt:
+        name: "nginx"
+        state: present
+        update_cache: yes
+      register: apt_result
+      retries: 3
+      delay: 30
+      until: apt_result is succeeded
+  rescue:
+    - name: Вывод отладки при ошибке установки NGINX
+      debug:
+        msg: "Не удалось установить NGINX после нескольких попыток. Проверьте блокировки apt и состояние системы."
 
 - name: Проверка, что пользователь nginx существует
   user:
