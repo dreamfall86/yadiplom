@@ -32,6 +32,11 @@
   notify:
     - Restart zabbix-server
 
+- name: Настройка конфигурации Zabbix Frontend
+  template:
+    src: "zabbix.conf.php.j2"
+    dest: "/usr/share/zabbix/ui/conf/zabbix.conf.php"
+
 - name: Получить IP-адрес Zabbix сервера
   set_fact:
     zabbix_server_ip: "{{ ansible_host }}"
@@ -44,3 +49,64 @@
     zabbix_server_ip: "{{ zabbix_server_ip }}"
   notify:
     - Restart zabbix-agent
+
+- name: Создать файл-флаг завершения установки
+  file:
+    path: "/usr/share/zabbix/ui/conf/installed"
+    state: touch
+
+- name: Настройка NGINX для Zabbix
+  copy:
+    content: |
+      server {
+          listen          80;
+          server_name     {{ ansible_host }};
+
+          root            /usr/share/zabbix/ui;
+
+          index           index.php;
+
+          location / {
+              try_files $uri $uri/ /index.php;
+          }
+
+          location ~ \.php$ {
+              include snippets/fastcgi-php.conf;
+              fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+              fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+              include fastcgi_params;
+          }
+      }
+    dest: /etc/nginx/sites-available/zabbix
+  notify:
+    - Reload nginx
+
+- name: Настройка параметров PHP
+  lineinfile:
+    path: "/etc/php/8.1/fpm/php.ini"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^post_max_size =', line: 'post_max_size = 16M' }
+    - { regexp: '^max_execution_time =', line: 'max_execution_time = 300' }
+    - { regexp: '^max_input_time =', line: 'max_input_time = 300' }
+
+- name: Перезагрузка PHP-FPM
+  service:
+    name: php8.1-fpm
+    state: restarted
+
+- name: Активировать конфигурацию NGINX
+  file:
+    src: /etc/nginx/sites-available/zabbix
+    dest: /etc/nginx/sites-enabled/zabbix
+    state: link
+  notify:
+    - Reload nginx
+
+- name: Удалить дефолтную конфигурацию NGINX
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify:
+    - Reload nginx

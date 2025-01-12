@@ -9,3 +9,8 @@
   service:
     name: zabbix-agent
     state: restarted
+
+- name: Reload nginx
+  service: 
+    name: nginx
+    state: restarted

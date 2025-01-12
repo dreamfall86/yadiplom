@@ -13,7 +13,7 @@ $wgMemcachedServers = [ "127.0.0.1:11211" ];
 $wgFileCacheDirectory = "/data/minio";  # Путь для файлового хранилища
 
 # Прочие настройки
-$wgServer = "http://{{ server_url }}";
+$wgServer = "http://{{ hostvars['nginx']['ansible_host'] }}";
 $wgSitename = "My MediaWiki";
 $wgScriptPath = "";
 $wgArticlePath = "/wiki/$1";

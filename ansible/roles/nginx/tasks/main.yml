@@ -1,16 +1,24 @@
 ---
 # tasks file for nginx
-- name: Отключение unattended-upgrades
-  systemd:
-    name: unattended-upgrades
-    state: stopped
-    enabled: no
-
 - name: Остановка и отключение Apache2
   systemd:
     name: apache2
     state: stopped
     enabled: no
+  ignore_errors: yes
+
+- name: Установка пакетов
+  apt:
+    name:
+      - php8.1-fpm
+      - php8.1-cli
+      - php8.1-mysql
+      - php8.1-curl
+      - php8.1-xml
+      - php8.1-mbstring
+      - php8.1-opcache
+    state: present
+    update_cache: yes 
 
 - name: Попытка установки NGINX с повторами
   block:
@@ -37,5 +45,10 @@
   template:
     src: "nginx.conf.j2"
     dest: "/etc/nginx/nginx.conf"
+  
+- name: Настройка default
+  template:
+    src: "default.conf.j2"
+    dest: "/etc/nginx/sites-available/default"
   notify:
     - Restart nginx

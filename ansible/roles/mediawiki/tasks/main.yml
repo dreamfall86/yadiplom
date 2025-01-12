@@ -144,6 +144,11 @@
     group: "www-data"
     mode: "0644"
 
+- name: Удаление defaul для корректного проксирования
+  shell: |
+    rm -rf /etc/nginx/sites-available/default && rm -rf /etc/nginx/sites-enabled/default
+  become: true
+  
 - name: Проверка существования таблиц в базе данных
   shell: |
     PGPASSWORD="balamut666" psql -h {{ hostvars['psql1']['ansible_host'] }} -U wikiuser -d my_wiki -tAc "SELECT 1 FROM pg_tables WHERE schemaname = 'public' LIMIT 1"

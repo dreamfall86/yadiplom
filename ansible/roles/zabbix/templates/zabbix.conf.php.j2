@@ -1,0 +1,14 @@
+<?php
+$DB['TYPE']     = 'POSTGRESQL';
+$DB['SERVER']   = '{{ postgres_host }}';
+$DB['PORT']     = '5432';
+$DB['DATABASE'] = 'zabbix';
+$DB['USER']     = 'zabbix';
+$DB['PASSWORD'] = 'i7def';
+
+$ZBX_SERVER      = '{{ ansible_host }}';
+$ZBX_SERVER_PORT = '10051';
+$ZBX_SERVER_NAME = 'Zabbix Server';
+
+$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
+?>
