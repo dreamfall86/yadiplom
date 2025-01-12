@@ -24,7 +24,6 @@ ansible-playbook -i inventory.json playbook.yml
 ```
 terraform destroy
 ```
-- Выполнить удаление файла inventory.json в дирректории /ansible
 
 ADD to new BRANCH:
 - добавил все плейбуки для автоматического развертывания и настройки облачного окружения.
