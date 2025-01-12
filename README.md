@@ -31,4 +31,7 @@ ADD to new BRANCH:
 - корректная (+-) работа ролей default/ ,mediawiki/ ,postgres/
 - также допилил (+-) автоматическую настройку репликации с помощью Patroni
 - ПРИ ПОЯВЛЕНИИ ОШИБОК dpkg ПРОСТО ПЕРЕЗАПУСТИТЬ ВМ!!!!!
-- проверка кластера patronictl -c /etc/patroni/config.yml list
+- проверка кластера 
+```
+patronictl -c /etc/patroni/config.yml list
+```
