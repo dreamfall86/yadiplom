@@ -25,6 +25,10 @@
   template:
     src: "zabbix_agentd.conf.j2"
     dest: "/etc/zabbix/zabbix_agentd.conf"
+    owner: zabbix
+    group: zabbix
+    mode: '0644'
+
   vars:
     zabbix_server_ip: "{{ hostvars['zabbix'].ansible_host | default('') }}"
 
