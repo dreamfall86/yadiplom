@@ -4,11 +4,14 @@ Documentation=https://docs.min.io
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/minio server /data
+ExecStart=/usr/local/bin/minio server /data/minio --console-address ":9001"
 Restart=always
 User=minio
 Group=minio
-LimitNOFILE=4096
+Environment="MINIO_ROOT_USER=keyaccess"
+Environment="MINIO_ROOT_PASSWORD=keysecret"
+
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target

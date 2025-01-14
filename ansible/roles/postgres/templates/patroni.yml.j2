@@ -101,6 +101,9 @@ bootstrap:
     - host replication replicator localhost trust
     - host replication replicator {{ etcd_host1 }}/32 md5
     - host replication replicator {{ etcd_host2 }}/32 md5
+    - host all wikiuser 0.0.0.0/0 md5
+    - host all zabbix 0.0.0.0/0 md5
+  
   
 postgresql:
   listen: "*"

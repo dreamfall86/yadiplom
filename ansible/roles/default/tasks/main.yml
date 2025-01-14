@@ -13,11 +13,22 @@
     state: present
     update_cache: yes
 
+- name: попытка исправить ошибки запуска агента
+  file:
+    path: /etc/zabbix/zabbix_agentd.d
+    state: directory
+    owner: zabbix
+    group: zabbix
+    mode: '0755'
+
 - name: Настройка конфигурации Zabbix Agent
   template:
     src: "zabbix_agentd.conf.j2"
     dest: "/etc/zabbix/zabbix_agentd.conf"
   vars:
     zabbix_server_ip: "{{ hostvars['zabbix'].ansible_host | default('') }}"
-  notify:
-    - Restart zabbix-agent  # Уведомление для перезапуска службы
+
+- name: restart zabbix-agent
+  service:
+    name: zabbix-agent
+    state: restarted

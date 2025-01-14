@@ -9,10 +9,8 @@ $wgDBpassword = "balamut666";  # Пароль пользователя базы 
 # Параметры для кэширования
 $wgMemcachedServers = [ "127.0.0.1:11211" ];
 
-# Включаем поддержку файлового хранилища (MinIO)
-$wgFileCacheDirectory = "/data/minio";  # Путь для файлового хранилища
-
 # Прочие настройки
+$wgFileBackend = 's3';
 $wgServer = "http://{{ hostvars['nginx']['ansible_host'] }}";
 $wgSitename = "My MediaWiki";
 $wgScriptPath = "";
@@ -21,3 +19,20 @@ wfLoadSkin( 'MinervaNeue' );
 wfLoadSkin( 'MonoBook' );
 wfLoadSkin( 'Timeless' );
 wfLoadSkin( 'Vector' );
+
+$wgS3Settings = [
+    'endpoint' => 'http://{{ hostvars["minio"]["ansible_host"] }}:9000',  
+    'region' => 'us-east-1',                                              
+    'accessKey' => '<keyaccess>',                                         
+    'secretKey' => '<keysecret>',                                         
+    'bucket' => 'mediawiki',                                             
+    'pathStyle' => true                                                  
+];
+$wgUseSwiftStorage = true;
+$wgSwiftConfig = [
+    'backend' => 's3',
+    'default' => true,
+    's3' => $wgS3Settings,
+];
+$wgUploadBaseUrl = 'http://{{ hostvars["minio"]["ansible_host"] }}:9000/mediawiki';
+$wgUploadDirectory = false;

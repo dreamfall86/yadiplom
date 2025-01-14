@@ -1,47 +1,5 @@
 ---
 # tasks file for mediawiki
-- name: Завершение всех процессов, использующих блокировку dpkg
-  shell: |
-    # Проверяем, если процессы заблокированы, завершаем их
-    pids=$(ps aux | grep -E '([u]nattended-upgrades|[a]pt)' | awk '{print $2}')
-    for pid in $pids; do
-      kill -9 $pid
-      echo "Завершен процесс с PID $pid"
-    done
-    # Делаем попытку очистить lock-файлы
-    rm -f /var/lib/dpkg/lock-frontend
-    rm -f /var/cache/apt/archives/lock
-    rm -f /var/lib/apt/lists/lock
-    dpkg --configure -a
-    apt-get clean
-  changed_when: false
-  ignore_errors: yes
-  retries: 5
-  delay: 10
-
-- name: Перезапуск службы apt
-  shell: |
-    systemctl restart apt-daily-upgrade.timer
-    systemctl restart apt-daily.timer
-    systemctl restart apt.service
-  changed_when: false
-  ignore_errors: yes
-
-- name: Отключение автоматических обновлений
-  shell: |
-    systemctl stop unattended-upgrades
-    systemctl disable unattended-upgrades
-  ignore_errors: yes
-
-- name: Задержка перед установкой пакетов
-  pause:
-    seconds: 10
-
-- name: Run dpkg --configure -a to fix interrupted installations
-  command: dpkg --configure -a
-  become: yes
-  ignore_errors: yes
-
 - name: Установка пакетов для сервиса
   apt:
     name:
@@ -165,3 +123,17 @@
   notify: 
     - Reload nginx
     - Restart php-fpm
+
+- name: копирование скрипта бэкапа mediawiki
+  template:
+    src: "backup.sh.j2"   
+    dest: "/etc/backup.sh" 
+  
+- name: +x for script
+  command: chmod +x "/etc/backup.sh"
+
+- name: cron script
+  lineinfile:
+    path: "/var/spool/cron/crontabs/root"  # Замените на нужного пользователя
+    line: "0 3 * * * /etc/backup.sh"
+    create: yes

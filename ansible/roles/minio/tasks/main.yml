@@ -6,6 +6,7 @@
       - apt-transport-https
       - wget
       - python3-pip
+      - unzip
     state: present
     update_cache: yes
 
@@ -28,7 +29,7 @@
 
 - name: Создать директорию для данных MinIO
   file:
-    path: /etc/minio
+    path: /data/minio
     state: directory
     owner: minio
     group: minio
@@ -37,7 +38,7 @@
 - name: Настройка конфигурации MinIO
   template:
     src: "minio.conf.j2"
-    dest: "/etc/minio/minio.conf"
+    dest: "/etc/default/minio"
   notify:
     - Restart minio
 
@@ -45,11 +46,31 @@
   template:
     src: "minio.service.j2"
     dest: "/etc/systemd/system/minio.service"
-  notify:
-    - Перезагрузить systemd
+ 
+- name: Перезагрузка systemd для применения изменений
+  systemd:
+    daemon_reload: yes
 
-- name: Запуск MinIO
+- name: restart MinIO
   service:
     name: minio
-    state: started
+    state: restarted
     enabled: yes
+
+- name: Download MinIO Client
+  get_url:
+    url: https://dl.min.io/client/mc/release/linux-amd64/mc
+    dest: /usr/local/bin/mc
+    mode: '0755'
+
+- name: Configure MinIO Client
+  command: >
+    mc alias set myminio http://{{ hostvars['minio']['ansible_host'] }}:9000 keyaccess keysecret
+  register: mc_config
+  changed_when: "'is successfully added' in mc_config.stdout"
+
+- name: Create a bucket in MinIO
+  command: >
+    mc mb myminio/mediawiki
+  register: mc_create_bucket
+  changed_when: "'created successfully' in mc_create_bucket.stdout"

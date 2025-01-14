@@ -18,6 +18,7 @@
       - zabbix-server-pgsql
       - zabbix-frontend-php
       - zabbix-nginx-conf
+      - zabbix-agent
       - python3-pip
       - zabbix-sql-scripts
       - php8.1-pgsql
@@ -35,8 +36,6 @@
   template:
     src: "zabbix_server.conf.j2"
     dest: "/etc/zabbix/zabbix_server.conf"
-  notify:
-    - Restart zabbix-server
 
 - name: Настройка конфигурации Zabbix Frontend
   template:
@@ -46,15 +45,6 @@
 - name: Получить IP-адрес Zabbix сервера
   set_fact:
     zabbix_server_ip: "{{ ansible_host }}"
-
-- name: Настройка Zabbix Agent на хостах
-  template:
-    src: "zabbix_agentd.conf.j2"
-    dest: "/etc/zabbix/zabbix_agentd.conf"
-  vars:
-    zabbix_server_ip: "{{ zabbix_server_ip }}"
-  notify:
-    - Restart zabbix-agent
 
 - name: Создать файл-флаг завершения установки
   file:
