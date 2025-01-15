@@ -7,14 +7,15 @@
       - wget
       - python3-pip
       - unzip
+      - haproxy
     state: present
     update_cache: yes
 
 - name: Установка библиотеки psycopg2-binary
   pip:
     name: psycopg2-binary
-    state: present
-  
+    state: present   
+
 - name: Скачать MinIO бинарный файл
   get_url:
     url: "https://dl.min.io/server/minio/release/linux-amd64/minio"
@@ -74,3 +75,43 @@
     mc mb myminio/mediawiki
   register: mc_create_bucket
   changed_when: "'created successfully' in mc_create_bucket.stdout"
+
+- name: доступ
+  command: >
+    mc policy set public myminio/mediawiki
+
+- name: доступ
+  command: >
+    mc policy set download myminio/mediawiki
+
+- name: Настройка HAproxy
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+  
+- name: +новая строка
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    line: ''
+    insertafter: EOF
+
+- name: права haproxy.cfg
+  ansible.builtin.file:
+    path: /etc/haproxy/haproxy.cfg
+    mode: '0644'
+
+
+- name: Вывод результата проверки HAProxy
+  debug:
+    var: haproxy_check_result.stdout
+
+- name: Проверка конфигурации HAProxy
+  command: haproxy -c -f /etc/haproxy/haproxy.cfg
+  register: haproxy_check_result
+  ignore_errors: yes
+
+- name: restart HAproxy
+  service:
+    name: haproxy
+    state: restarted
+    enabled: yes 

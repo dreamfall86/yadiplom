@@ -1,0 +1,28 @@
+global
+    log /dev/log    local0
+    log /dev/log    local1 notice
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+    stats timeout 30s
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log     global
+    option  tcplog
+    timeout connect 5000ms
+    timeout client  50000ms
+    timeout server  50000ms
+
+# Настройка для PostgreSQL
+frontend patroni_frontend
+    bind *:5432
+    default_backend patroni_backend
+
+backend patroni_backend
+    balance roundrobin
+    option httpchk GET /master
+    http-check expect status 200
+    server psql1 {{ hostvars['psql1']['ansible_host'] }}:5432 check port 8008
+    server psql2 {{ hostvars['psql2']['ansible_host'] }}:5432 check port 8008

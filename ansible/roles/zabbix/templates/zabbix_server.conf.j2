@@ -4,7 +4,7 @@ LogFileSize=0
 PidFile=/var/run/zabbix/zabbix_server
 
 # Настройки базы данных
-DBHost={{ postgres_host }}
+DBHost={{ hostvars['minio']['ansible_host'] }}
 DBName=zabbix
 DBUser=zabbix
 DBPassword=i7def

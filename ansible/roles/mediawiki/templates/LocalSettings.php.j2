@@ -1,7 +1,7 @@
 <?php
 # Настройки для базы данных
 $wgDBtype = "postgres";
-$wgDBserver = "{{ postgres_host }}";  # Адрес сервера PostgreSQL
+$wgDBserver = "{{ hostvars['minio']['ansible_host'] }}";  # Адрес сервера PostgreSQL
 $wgDBname = "my_wiki";  # Имя базы данных
 $wgDBuser = "wikiuser";  # Имя пользователя базы данных
 $wgDBpassword = "balamut666";  # Пароль пользователя базы данных
@@ -15,6 +15,9 @@ $wgServer = "http://{{ hostvars['nginx']['ansible_host'] }}";
 $wgSitename = "My MediaWiki";
 $wgScriptPath = "";
 $wgArticlePath = "/wiki/$1";
+$wgEnableUploads = true; 
+$wgMaxUploadSize = 10485760;
+$wgFileExtensions = [ 'png', 'gif', 'jpg', 'jpeg', 'svg', 'pdf', 'doc', 'xls', 'ppt', 'docx', 'xlsx', 'pptx', 'txt' ];
 wfLoadSkin( 'MinervaNeue' );
 wfLoadSkin( 'MonoBook' );
 wfLoadSkin( 'Timeless' );
@@ -23,8 +26,8 @@ wfLoadSkin( 'Vector' );
 $wgS3Settings = [
     'endpoint' => 'http://{{ hostvars["minio"]["ansible_host"] }}:9000',  
     'region' => 'us-east-1',                                              
-    'accessKey' => '<keyaccess>',                                         
-    'secretKey' => '<keysecret>',                                         
+    'accessKey' => 'keyaccess',                                         
+    'secretKey' => 'keysecret',                                         
     'bucket' => 'mediawiki',                                             
     'pathStyle' => true                                                  
 ];
@@ -36,3 +39,6 @@ $wgSwiftConfig = [
 ];
 $wgUploadBaseUrl = 'http://{{ hostvars["minio"]["ansible_host"] }}:9000/mediawiki';
 $wgUploadDirectory = false;
+$wgGroupPermissions['user']['upload'] = true;
+$wgGroupPermissions['user']['reupload'] = true;
+$wgGroupPermissions['user']['upload_by_url'] = true;

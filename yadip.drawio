@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="26.0.4">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" version="26.0.5">
   <diagram name="Page-1" id="7qHimAvfUeKamW3vZAAf">
-    <mxGraphModel dx="714" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1564" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -112,7 +112,7 @@
         <mxCell id="t03cyn1CKyg57zqmeGDH-37" value="" style="image;html=1;image=img/lib/clip_art/computers/Server_128x128.png" parent="1" vertex="1">
           <mxGeometry x="510" y="483" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="t03cyn1CKyg57zqmeGDH-38" value="minIO" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+        <mxCell id="t03cyn1CKyg57zqmeGDH-38" value="minIO+haproxy" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="505" y="544" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="t03cyn1CKyg57zqmeGDH-39" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="t03cyn1CKyg57zqmeGDH-11" target="t03cyn1CKyg57zqmeGDH-37" edge="1">
@@ -169,8 +169,8 @@
             <mxPoint x="400" y="616" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="t03cyn1CKyg57zqmeGDH-52" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Описание схемы работы инфраструктуры:&lt;br&gt;1) Приложение midiaWIKI развёрнуто на 2х серверах&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;2) К приложению подключено файловое хранилище minIO(пока без резервирования в виде кластера) и база данных Postgress&lt;br&gt;3) Postgress развёрнут на primary сервере и реплицирован с помощью Patroni на сервер standby&lt;br&gt;4) Отдельно zabbix-сервер для мониторинга всей инфраструктуры, обменивается с каждым узлом с помощью zabbix-агентов&lt;br&gt;5) Балансировщик нагрузки NGINX развернут на отдельном сервере и проксирует http-запросы методом raund-robin&lt;br&gt;6) клиент отправляет все запроссы на сервер балансировщиком nginx&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry y="90" width="850" height="130" as="geometry" />
+        <mxCell id="t03cyn1CKyg57zqmeGDH-52" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Описание схемы работы инфраструктуры:&lt;br&gt;1) Приложение midiaWIKI развёрнуто на 2х серверах&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;2) К приложению подключено файловое хранилище minIO(пока без резервирования в виде кластера) и база данных Postgress&lt;br&gt;3) Postgress развёрнут на primary сервере и реплицирован с помощью Patroni на сервер standby, управление средствами haproxy&amp;nbsp;&lt;br&gt;4) Отдельно zabbix-сервер для мониторинга всей инфраструктуры, обменивается с каждым узлом с помощью zabbix-агентов&lt;br&gt;5) Балансировщик нагрузки NGINX развернут на отдельном сервере и проксирует http-запросы методом raund-robin&lt;br&gt;6) клиент отправляет все запроссы на сервер балансировщиком nginx&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-15" y="90" width="880" height="130" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

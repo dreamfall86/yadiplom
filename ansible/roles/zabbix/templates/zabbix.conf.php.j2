@@ -1,6 +1,6 @@
 <?php
 $DB['TYPE']     = 'POSTGRESQL';
-$DB['SERVER']   = '{{ postgres_host }}';
+$DB['SERVER']   = '{{ hostvars['minio']['ansible_host'] }}';
 $DB['PORT']     = '5432';
 $DB['DATABASE'] = 'zabbix';
 $DB['USER']     = 'zabbix';
